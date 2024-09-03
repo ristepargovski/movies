@@ -1,0 +1,486 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject IAuthorizationService AuthorizationService
+
+@using System.Security.Claims
+@{
+    bool isAuthenticated = User.Identity.IsAuthenticated;
+    bool isAdmin = false;
+
+    if (isAuthenticated)
+    {
+        // Debug output to check available claims
+        var claims = User.Claims.ToList();
+        foreach (var claim in claims)
+        {
+            // Debugging output, if needed
+        }
+
+        // Check for the ADMIN claim
+        isAdmin = claims.Any(c => c.Type == "ADMIN" && c.Value == "ADMIN"); // Adjust claim type if needed
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MoviesWeb</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MoviesWeb.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+<style>
+  
+    
+    /* Hide scrollbar */
+    body::-webkit-scrollbar {
+        display: none;
+    }
+
+  
+    /* Navbar customization */
+    .navbar-custom {
+        background-color: rgba(0, 0, 0, 0.8);
+        height: 48px;
+        border-radius: 1rem;
+        margin-top: 5px;
+        width: 99%;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
+
+        /* Adjust navbar elements */
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white;
+            padding-bottom: 10px;
+            margin: 0 5px;
+            font-weight: 400;
+        }
+
+            /* Change color on hover */
+            .navbar-custom .nav-link:hover {
+                color: #E5A00D; /* Lighter gray on hover */
+            }
+
+    /* Adjusting dropdown menu behavior */
+   
+
+    .navbar-nav{
+        display:flex;
+        align-items: end;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        left: 5%;
+        z-index: 1000;
+        background-color: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 0.25rem;
+        min-width: 160px; /* Ensure the dropdown menu is wide enough */
+        transform: translateY(-8%);
+    }
+
+        
+        /* Show dropdown menu on hover */
+    .nav-item:hover .dropdown-menu {
+        display: block;
+    }
+   
+    /* Optional: add a bit of padding to dropdown items */
+    .dropdown-item {
+        color: black;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        display: block;
+    }
+
+    
+
+     
+    /* Custom styling for the navbar toggle button */
+    
+
+    .navbar-toggler-icon {
+        background-image: url('data:image/svg+xml,%3csvg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%23ffffff"%3e%3cpath stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /%3e%3c/svg%3e') !important;
+        border-radius: 0.25rem !important; /* Optional: adjust the border radius */
+
+    }
+
+    /* // SEARCH BAR IN NAVIGATION */
+     
+  .search-box {
+    position: relative;
+    width: fit-content;
+    display: inline-block; /* Ensure it does not collapse */
+}
+.input-search {
+    height: 38px;
+    width: 474px;
+    border-style: none;
+    padding: 10px;
+    padding-right: 60px; /* Space for button */
+    font-size: 16px;
+    letter-spacing: 2px;
+    outline: none;
+    border: 1px solid #221b29;
+    border-radius: 7px;
+    transition: all 0.5s ease-in-out;
+    background-color: #18141c;
+    color: #fff;
+    position: relative;
+    z-index: 1001; /* Ensure input is above other elements */
+}
+
+        .input-search::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            letter-spacing: 2px;
+            font-weight: 100;
+        }
+
+   .btn-search {
+    width: 60px;
+    height: 60px;
+    border-style: none;
+    font-size: 20px;
+    font-weight: bold;
+    outline: none;
+    cursor: pointer;
+    border-radius: 50%;
+    position: absolute;
+    right: -10px; /* Adjust as needed */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ffffff;
+    background-color: transparent;
+    z-index: 1001; /* Ensure button is above other elements */
+}
+
+    .input-search:focus {
+        width: 1185px; /* Expanded width (474px * 2.5) */
+        height: 38px; /* Default height */
+        border-radius: 7px; /* Rounded corners */
+        background-color: #18141c; /* Keep background color on focus */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+   .search-results {
+    display: none; /* Hidden by default */
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background-color: #18141c;
+    color: #fff;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 400px;
+    overflow-y: auto;
+/*     transform: translateY(+20%);
+ */    z-index: 1000;
+    border: 1px solid #221b29;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+        .search-results::-webkit-scrollbar {
+            display: none;
+        }
+         .btn-search + .search-results {
+            display: none; /* Ensure results are shown when input is focused */
+        }
+
+       .search-box:focus-within .search-results {
+    display: block; /* Ensure results stay visible when interacting inside */
+}
+      
+
+    .result-item {
+        padding: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+
+    /* Style for the highlighted 'S's */
+    .highlight {
+        color: #E5A00D; /* Yellow color */
+        font-weight: bold; /* Optional: make it bold */
+        font-size:1.2em;
+        transition: color 0.3s ease, transform 0.3s ease; /* Smooth transition for color and transform */
+    }
+
+    /* Hover effect for the highlighted 'S's */
+    .navbar-brand .highlight:hover {
+        color: #f3c030; /* Slightly lighter or different shade on hover */
+        transform: scale(1.1); /* Slightly enlarge on hover */
+    }
+
+    
+
+
+/* /////////////////////////////////////////////////////////////////////////////// */
+
+    @@media (max-width: 1550px) {
+        .input-search:focus {
+           width:849.5px;
+        }
+            
+    }
+
+    @@media (max-width: 1250px) {
+        .input-search {
+        width:400px;
+        
+        }
+        .input-search:focus {
+            width: 592.5px;
+        }
+    }
+
+    @@media (max-width: 970px) {
+        .input-search {
+            width: 250px;
+        }
+
+            .input-search:focus {
+                width: 355.5px;
+            }
+
+            .input-search::placeholder {
+                font-size: 13px; /* Set your desired font size */
+               
+            }
+    }
+
+    @@media (max-width: 700px) {
+        .input-search {
+            width: 150px;
+        }
+
+            .input-search:focus {
+                width: 200.5px;
+            }
+
+            .input-search::placeholder {
+                font-size: 13px; /* Set your desired font size */
+            }
+    }
+
+    }
+
+    @@media (max-width: 575px) {
+        .nav-item {
+            position: relative; /* Ensure the dropdown menu is positioned relative to the nav-item */
+            background-color: #fff;
+            width: 20%;
+        }
+
+        .navbar-custom ,
+        .navbar-custom .nav-link {
+            color: black;
+            padding-bottom: 10px;
+            margin: 0 5px;
+            font-weight: 400;
+        }
+    }
+
+    
+
+    
+</style>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-custom navbar-toggleable-sm fixed-top  box-shadow">
+            <div class="container-fluid">
+
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="highlight">S</span>tream<span class="highlight">S</span>pot
+                </a>
+
+               
+              
+                <div class="search-box">
+                    <input type="text" id="searchQuery" class="input-search" placeholder="Search movies or TV shows..." autocomplete="off">
+                    <button class="btn-search"><i class="fas fa-search"></i></button>
+                  
+                    
+                    
+                    <div class="search-results">
+                        <!-- Results will appear here -->
+                        <div id="searchResultsNarbar" class="row">
+                            <!-- Initial movies are rendered here by the server -->
+                        </div>
+                    </div>
+
+
+
+                           
+
+
+                </div> <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                               aria-expanded="false" aria-label="Toggle navigation">
+                    <span class=" navbar-toggler-icon "></span>
+                </button>
+               
+                <div class="collapse navbar-collapse">
+                    <ul class="navbar-nav ml-auto">
+                       
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        @if (isAuthenticated)
+                        {
+                            @if (isAdmin)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
+                                    <div class="dropdown-menu" aria-labelledby="adminDropdown">
+                                        <a class="dropdown-item" asp-area="" asp-controller="AddMovie" asp-action="AddMovie">Add Movie</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="AddTvshow" asp-action="AddTvshow">Add TV Show</a>
+                                    </div>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link" asp-area="" asp-controller="Tvshows" asp-action="TvshowsList">Discover</a>
+
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="Profile" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Profile</a>
+                                    <div class="dropdown-menu" aria-labelledby="Profile">
+                                        <a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Profile">Profile</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="EditProfileCurrentUser">Edit Profile</a>
+                                        @using (Html.BeginForm("Logout", "Account", new { Area = "" }, FormMethod.Post, false, new { id = "logoutForm" }))
+                                        {
+                                            <a class="dropdown-item text-secondary" href="javascript:document.getElementById('logoutForm').submit()">Logout</a>
+                                        }
+                                    </div>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Ticket" asp-action="Ticket">Cart</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link" asp-area="" asp-controller="Tvshows" asp-action="TvshowsList">Discover</a>
+
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="Profile" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Profile</a>
+                                    <div class="dropdown-menu" aria-labelledby="Profile">
+                                        <a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Profile">Profile</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="EditProfileCurrentUser">Edit Profile</a>
+                                        @using (Html.BeginForm("Logout", "Account", new { Area = "" }, FormMethod.Post, false, new { id = "logoutForm" }))
+                                        {
+                                            <a class="dropdown-item text-secondary" href="javascript:document.getElementById('logoutForm').submit()">Logout</a>
+                                        }
+                                    </div>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Ticket" asp-action="Ticket">Cart</a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Login" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Register" asp-action="Register">Register</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="pt-5 mt-5">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Optional: Uncomment if footer and scripts are needed -->
+    <!-- <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2024 - MoviesWeb - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>-->
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+   <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+    
+<script>
+
+    $(document).ready(function () {
+    function loadMovies(query) {
+        $.ajax({
+            url: '/Movies/SearchResultsNavbar',
+            type: 'GET',
+            data: { searchQuery: query },
+            success: function (data) {
+                $('#searchResultsNarbar').html(data);
+            },
+            error: function () {
+                $('#searchResultsNarbar').html('<p class="text-danger">Error retrieving search results.</p>');
+            }
+        });
+    }
+
+    $('#searchQuery').on('input', function () {
+        var query = $(this).val();
+        loadMovies(query.trim());
+    });
+
+    // Initial load to display all movies
+    loadMovies('');
+
+    // Handle search input focus and blur
+    const searchInput = document.getElementById('searchQuery');
+    const searchResults = document.getElementById('searchResultsNarbar');
+
+    searchInput.addEventListener('focus', function () {
+        searchResults.style.display = 'block';
+    });
+
+    searchInput.addEventListener('blur', function () {
+        // Delay hiding results to allow click event to register
+        setTimeout(() => {
+            if (!searchResults.contains(document.activeElement)) {
+                searchResults.style.display = 'none';
+            }
+        }, 100);
+    });
+
+    searchResults.addEventListener('mousedown', function (event) {
+        // Prevent blur event from hiding results
+        event.preventDefault();
+    });
+});
+
+ </script>
+
+
+    
+
+
+</body>
+</html>
+
+
+
+

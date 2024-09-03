@@ -1,0 +1,229 @@
+﻿@using MoviesAPI.Models
+@model List<TicketResponse>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Movie Hub</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<section class="h-100 h-custom">
+    <div class="container h-100 py-5">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col">
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="h5">Image</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Price</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ticket in Model)
+                            {
+                                if (ticket.Movie != null)
+                                {
+                                    <tr>
+                                        <th scope="row">
+                                            <div class="d-flex align-items-center">
+                                                <div class="col-lg-4 col-md-6 movie-card">
+                                                    <div class="card" style="width: 120px;">
+                                                        @if (ticket.Movie.Image != null && ticket.Movie.Image.Length > 0)
+                                                        {
+                                                            <img src="data:image;base64,@Convert.ToBase64String(ticket.Movie.Image)" class="card-img-top" alt="@ticket.Movie.Name" style="width: 100%; height: 60px; object-fit: cover;">
+                                                        }
+                                                        else
+                                                        {
+                                                            <img src="https://via.placeholder.com/120x60" class="card-img-top" alt="No Image Available" style="width: 100%; height: 60px; object-fit: cover;">
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <td class="align-middle">
+                                            <p class="mb-0" style="font-weight: 500;">@ticket.Movie.Name</p>
+                                        </td>
+                                        <td class="align-middle">
+                                            <p class="mb-0" style="font-weight: 500;">Movie</p>
+                                        </td>
+                                        <td class="align-middle" data-price="@ticket.Movie.Price">
+                                            <p class="mb-0" style="font-weight: 500;">@ticket.Movie.Price $</p>
+                                        </td>
+                                        <td class="align-middle">
+                                            <form method="post" action="@Url.Action("DeleteTicket", "Ticket")">
+                                                <input type="hidden" name="id" value="@ticket.Movie.TicketId" />
+                                                <button type="submit" class="btn btn-danger btn-sm" aria-label="Delete Ticket"
+                                                        style="
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: 30px;
+                            height: 30px;
+                            border-radius: 50%;
+                            text-align: center;
+                            color: white;
+                            font-size: 16px;
+                            line-height: 1;
+                            padding: 0;
+                            text-decoration: none;">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                                else if (ticket.Tvshow != null)
+                                {
+                                    <tr>
+                                        <th scope="row">
+                                            <div class="d-flex align-items-center">
+                                                <div class="col-lg-4 col-md-6 tvshow-card">
+                                                    <div class="card" style="width: 120px;">
+                                                        @if (ticket.Tvshow.Image != null && ticket.Tvshow.Image.Length > 0)
+                                                        {
+                                                            <img src="data:image;base64,@Convert.ToBase64String(ticket.Tvshow.Image)" class="card-img-top" alt="@ticket.Tvshow.Name" style="width: 100%; height: 60px; object-fit: cover;">
+                                                        }
+                                                        else
+                                                        {
+                                                            <img src="https://via.placeholder.com/120x60" class="card-img-top" alt="No Image Available" style="width: 100%; height: 60px; object-fit: cover;">
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <td class="align-middle">
+                                            <p class="mb-0" style="font-weight: 500;">@ticket.Tvshow.Name</p>
+                                        </td>
+                                        <td class="align-middle">
+                                            <p class="mb-0" style="font-weight: 500;">Series</p>
+                                        </td>
+                                        <td class="align-middle" data-price="@ticket.Tvshow.Price">
+                                            <p class="mb-0" style="font-weight: 500;">@ticket.Tvshow.Price $</p>
+                                        </td>
+                                        <td class="align-middle">
+                                            <form method="post" action="@Url.Action("DeleteTicket", "Ticket")">
+                                                <input type="hidden" name="id" value="@ticket.Tvshow.TicketId" />
+                                                <button type="submit" class="btn btn-danger btn-sm" aria-label="Delete Ticket"
+                                                        style="
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: 30px;
+                            height: 30px;
+                            border-radius: 50%;
+                            text-align: center;
+                            color: white;
+                            font-size: 16px;
+                            line-height: 1;
+                            padding: 0;
+                            text-decoration: none;">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="card shadow-2-strong mb-5 mb-lg-0" style="border-radius: 16px; margin-top: 10px;">
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-4 col-xl-3 mb-4 mb-md-0">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="paymentMethod" style="font-weight: bold; margin-bottom: 10px;">Payment Method</label>
+                                        <select id="paymentMethod" name="paymentMethod" class="form-control" style="border-radius: 4px; border: 1px solid #ced4da;">
+                                            <option value="creditCard" selected>
+                                                Credit Card
+                                            </option>
+                                            <option value="debitCard">
+                                                Debit Card
+                                            </option>
+                                            <option value="paypal">
+                                                PayPal
+                                            </option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="row justify-content-center">
+                                <!-- Left Side -->
+                                <div class="col-12 col-xl-6 mb-4 mb-xl-5 d-flex justify-content-center">
+                                    <div data-mdb-input-init class="form-outline w-100">
+                                        <input type="text" id="typeName" class="form-control form-control-lg" placeholder="John Smith" />
+                                        <label class="form-label" for="typeName">Name on card</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-xl-6 mb-4 mb-xl-5 d-flex justify-content-center">
+                                    <div data-mdb-input-init class="form-outline w-100">
+                                        <input type="text" id="typeExp" class="form-control form-control-lg" placeholder="MM/YY" maxlength="5" />
+                                        <label class="form-label" for="typeExp">Expiration</label>
+                                    </div>
+                                </div>
+
+                                <!-- Right Side -->
+                                <div class="col-12 col-xl-6 mb-4 mb-xl-5 d-flex justify-content-center">
+                                    <div data-mdb-input-init class="form-outline w-100">
+                                        <input type="text" id="typeCardNumber" class="form-control form-control-lg" placeholder="1111 2222 3333 4444" maxlength="19" />
+                                        <label class="form-label" for="typeCardNumber">Card Number</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-xl-6 mb-4 mb-xl-5 d-flex justify-content-center">
+                                    <div data-mdb-input-init class="form-outline w-100">
+                                        <input type="password" id="typeCvv" class="form-control form-control-lg" placeholder="●●●" maxlength="3" />
+                                        <label class="form-label" for="typeCvv">Cvv</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="checkoutButton" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block btn-lg">
+                            <div class="d-flex justify-content-between">
+                                <span>Checkout</span>
+                                <span>$0.00</span>
+
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Function to calculate the total price
+        function calculateTotal() {
+            let total = 0;
+            document.querySelectorAll('td[data-price]').forEach(function (element) {
+                const price = parseFloat(element.getAttribute('data-price'));
+                if (!isNaN(price)) {
+                    total += price;
+                }
+            });
+            return total.toFixed(2); // Return total rounded to 2 decimal places
+        }
+
+        // Update the total price display
+        function updateTotal() {
+            const total = calculateTotal();
+            document.querySelector('#checkoutButton span:last-child').textContent = `$${total}`;
+        }
+
+        // Initialize total display on page load
+        updateTotal();
+    });
+</script>

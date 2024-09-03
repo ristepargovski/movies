@@ -1,0 +1,608 @@
+﻿@model MoviesWeb.Models.TvshowsViewModel
+
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@inject IAuthorizationService AuthorizationService
+
+@{
+    bool isAuthenticated = User.Identity.IsAuthenticated;
+    bool isAdmin = false;
+
+    if (isAuthenticated)
+    {
+        var claims = User.Claims.ToList();
+        isAdmin = claims.Any(c => c.Type == "ADMIN" && c.Value == "ADMIN");
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - TV Show Hub</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #141414; /* Dark background */
+        }
+
+        .tvshow-details h1 {
+            color: #ffffff;
+        }
+
+        .tvshow-details p {
+            color: #d3d3d3;
+            font-size: 1.2rem;
+        }
+
+        .badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.7rem;
+            border-radius: 5px;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border: none;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .btn-outline-light {
+            border: 2px solid #ffffff;
+            color: #ffffff;
+        }
+
+            .btn-outline-light:hover {
+                background-color: #ffffff;
+                color: #000;
+            }
+
+        .img-fluid {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7); /* Shadow effect */
+            position: relative; /* Container needs to be relative for absolute positioning of the button */
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            color: #ffffff;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+            .play-button:hover{
+                transform: translate(-50%, -50%) scale(1.2); /* Center and scale the button */
+                color:yellow;
+              
+                
+            }
+
+        .img-container:hover .play-button {
+            display: block; /* Show button on hover */
+        }
+
+        .navbar-collapse {
+            flex-grow: 0;
+        }
+
+        .navbar-custom {
+            display: flex;
+        }
+
+        .btn-outline-secondary {
+            color: #E5A00D;
+            border-color: #E5A00D;
+        }
+
+            .btn-outline-secondary:hover {
+                background-color: #E5A00D;
+                color: #121212;
+            }
+
+            .btn-center{
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem; /* Adjust size as needed */
+            color: white; /* Adjust color as needed */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1; /* Ensure button is above other elements */
+            transition: 0.3s ease;
+        }
+
+            .play-button:hover {
+                transform: translate(-50%, -50%) scale(1.2); /* Center and scale the button */
+                color: yellow;
+            }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%; /* Adjust as needed */
+            height: 100%;
+            background-color: #000; /* Optional: Background color for the placeholder */
+            cursor: pointer; /* Indicate that the area is clickable */
+        }
+
+            .video-wrapper iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: none; /* Hide the iframe initially */
+            }
+
+            /* REVIEW STARS */
+
+        .rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+        }
+
+            .rating > input {
+                display: none;
+            }
+
+            .rating > label {
+                position: relative;
+                width: 1em;
+                font-size: 2.5vw;
+                color: #FFD600;
+                cursor: pointer;
+            }
+
+                .rating > label::before {
+                    content: "\2605";
+                    position: absolute;
+                    opacity: 0;
+                }
+
+                .rating > label:hover:before,
+                .rating > label:hover ~ label:before {
+                    opacity: 1 !important;
+                }
+
+            .rating > input:checked ~ label:before {
+                opacity: 1;
+            }
+
+            .rating:hover > input:checked ~ label:before {
+                opacity: 0.4;
+            }
+
+           
+
+            /* Different styles for rated and unrated */
+            .rating.rated > label {
+                cursor: default;
+            }
+
+            .rating.unrated > label {
+                cursor: pointer;
+            }
+
+        body {
+            background: #222225;
+            color: white;
+        }
+
+        h1, p {
+            text-align: center;
+        }
+
+
+
+        p {
+            font-size: 1.2rem;
+        }
+
+        @@media only screen and (max-width: 600px) {
+            h1 {
+                font-size: 14px;
+            }
+
+            p {
+                font-size: 12px;
+            }
+        }
+
+/*          COMMENT SECTION
+ */
+        .comment-section {
+            margin-top: 50px;
+        }
+
+        .comment-box {
+            background-color: #222;
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+            .comment-box .comment-date {
+                color: #888;
+                font-size: 0.9rem;
+            }
+
+            .comment-box .comment-text {
+                margin-top: 10px;
+                font-size: 1.1rem;
+            }
+
+        .comment-form textarea {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            resize: none;
+        }
+
+            .comment-form textarea::placeholder {
+                color: #bbb;
+            }
+
+        .comment-form button {
+            margin-top: 10px;
+        }
+
+        .comment-box {
+            border: solid 1px #454343;
+        }
+
+        .comment-actions {
+            display: flex; /* Use Flexbox layout */
+            align-items: center; /* Center buttons vertically */
+            justify-content: flex-start; /* Align buttons to the left */
+        }
+
+
+/*         // AVERAGE RATING WITH USERS
+ */
+        .rating-circle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f8b600;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-right: 15px;
+        }
+
+
+        
+        .stars {
+            display: inline-block;
+            font-size: 20px;
+        }
+
+            .stars.checked {
+                color: #ffd700; /* Gold color for filled stars */
+            }
+
+        .rating > span::before {
+            content: "\2605";
+            position: absolute;
+            opacity: 0;
+        }
+
+        
+
+
+
+
+
+        .rating-text {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+
+
+@@media (min-width: 1200px) {
+    .container, .container-lg, .container-md, .container-sm, .container-xl {
+        max-width: 1340px;
+    }
+}
+     
+     
+
+      
+
+       
+
+
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <!-- TV Show Poster -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <div class="tvshow-details">
+                            <div class="video-wrapper" onclick="playVideo()">
+                                @if (Model.Tvshows.Image != null && Model.Tvshows.Image.Length > 0)
+                                {
+                                    <img src="data:image;base64,@Convert.ToBase64String(Model.Tvshows.Image)" class="card-img-top img-fluid" alt="@Model.Tvshows.Name">
+                                }
+                                else
+                                {
+                                    <img src="https://via.placeholder.com/350x200" class="card-img-top img-fluid" alt="No Image Available">
+                                }
+                                <div class="play-button"><i class="bi bi-play-circle-fill"></i></div>
+                                <iframe id="youtubeIframe"
+                                        src="@Model.Tvshows.Ytlink.Replace("watch?v=", "embed/")"
+                                        title="YouTube video player"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowfullscreen>
+                                </iframe>
+                            </div>
+                            <h5 class="user-name mb-1">@Model.Tvshows.Name</h5>
+                            <p>@Model.Tvshows.Details</p>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                        @* REVIEW STARS *@
+
+
+                <form method="post" action="@Url.Action("AddRatingTvshow", "Tvshows")">
+                    <input type="hidden" name="tvshow_id" value="@Model.Tvshows.Id" />
+                    <input type="hidden" name="Rating" id="ratingValue" value="" />
+
+
+                    <div class="rating @(Model.RatingTvshow > 0 ? "rated" : "unrated")">
+                        @if (Model.RatingTvshow > 0)
+                        {
+                            <input type="radio" name="rating" value="5" id="5" @(Model.RatingTvshow == 5 ? "checked" : "") disabled>
+                            <label for="5">☆</label>
+                            <input type="radio" name="rating" value="4" id="4" @(Model.RatingTvshow == 4 ? "checked" : "") disabled>
+                            <label for="4">☆</label>
+                            <input type="radio" name="rating" value="3" id="3" @(Model.RatingTvshow == 3 ? "checked" : "") disabled>
+                            <label for="3">☆</label>
+                            <input type="radio" name="rating" value="2" id="2" @(Model.RatingTvshow == 2 ? "checked" : "") disabled>
+                            <label for="2">☆</label>
+                            <input type="radio" name="rating" value="1" id="1" @(Model.RatingTvshow == 1 ? "checked" : "") disabled>
+                            <label for="1">☆</label>
+                        }
+                        else
+                        {
+                            <input type="radio" name="rating" value="5" id="5" onclick="setRating(5)">
+                            <label for="5">☆</label>
+                            <input type="radio" name="rating" value="4" id="4" onclick="setRating(4)">
+                            <label for="4">☆</label>
+                            <input type="radio" name="rating" value="3" id="3" onclick="setRating(3)">
+                            <label for="3">☆</label>
+                            <input type="radio" name="rating" value="2" id="2" onclick="setRating(2)">
+                            <label for="2">☆</label>
+                            <input type="radio" name="rating" value="1" id="1" onclick="setRating(1)">
+                            <label for="1">☆</label>
+                        }
+                       
+                    </div>
+
+                    @if (Model.RatingTvshow == 0)
+                    {
+                        <div class="btn-center"><button type="submit" class="btn btn-outline-secondary btn-rounded mx-2 text-center">Submit Rating</button></div>
+                    }
+
+
+                </form>
+
+
+
+
+
+            </div>
+
+            <!-- TV Show Details -->
+            <div class="col-lg-8">
+                <div class="tvshow-details text-white row">
+                        <h1 class="display-3 fw-bold mb-4">@Model.Tvshows.Name</h1>
+                      
+                
+
+
+                    <div class="d-flex align-items-center mb-4">
+                        <span class="btn-warning badge me-2">@Model.Tvshows.Price $</span>
+                        <span class="badge bg-light text-dark me-2">@Model.Tvshows.Quality</span>
+                        <span class="me-3">@Model.Tvshows.Genre</span>
+                        <span class="text-muted me-3">|</span>
+                        <span class="me-3">@Model.Tvshows.Release_date.ToString("MMMM dd, yyyy")</span>
+                        <span class="text-muted me-3">|</span>
+                        <span class="me-3">@Model.Tvshows.Seasons Seasons</span>
+                        <span class="text-muted me-3">|</span>
+                        <span class="me-3">@Model.Tvshows.Episodes Episodes</span>
+                        <span class="text-muted me-3">|</span>
+
+                            
+                            <div class="star-rating">
+
+                            <div class="rating">
+                                <span class="stars @(Model.AverageRating >= 5 ? "checked" : "")">★</span>
+                                <span class="stars @(Model.AverageRating >= 4 ? "checked" : "")">★</span>
+                                <span class="stars @(Model.AverageRating >= 3 ? "checked" : "")">★</span>
+                                <span class="stars @(Model.AverageRating >= 2 ? "checked" : "")">★</span>
+                                <span class="stars @(Model.AverageRating >= 1 ? "checked" : "")">★</span>
+                            </div>
+
+                            @if(@Model.TotalUsersRated == 1){
+                            <span class="rating-text">
+                                @(Model.averageRatingMultiply2.ToString("F1")) from @Model.TotalUsersRated user
+                            </span>
+                            }
+                            @if (Model.TotalUsersRated > 1){
+
+                           
+                            <span class="rating-text">
+                                @(Model.averageRatingMultiply2.ToString("F1")) from @Model.TotalUsersRated users
+                                </span>
+                            }
+                            @if (Model.TotalUsersRated == 0){
+
+                            
+                            <span class="rating-text">
+                                No rating for this movie.
+                            </span>
+                            }
+
+                        </div>
+                       
+                    </div>
+
+                    <p class="mb-4">@Model.Tvshows.Details</p>
+
+                    <!-- Buttons -->
+                    <div class="d-flex align-items-center mt-4">
+                        @if (Model.IsPurchased)
+                        {
+                            <button class="btn btn-outline-light btn-lg px-4 py-2 me-3" disabled>
+                                Purchased
+                            </button>
+                        }
+                        else
+                        {
+                            <form method="post" action="@Url.Action("CreateTicketTvshow", "Ticket")" onsubmit="return confirmBuy();">
+                                <input type="hidden" name="tvshowId" value="@Model.Tvshows.Id" />
+                                <button type="submit" class="btn btn-warning btn-lg me-3 px-4 py-2">
+                                    <i class="bi bi-play-circle-fill me-2"></i>Add to Cart
+                                </button>
+                            </form>
+                        }
+                        @if (isAdmin)
+                        {
+                            <a href="@Url.Action("EditTvshows", "Tvshows", new { id = Model.Tvshows.Id })" class="btn btn-outline-light btn-lg px-4 py-2 me-3">
+                                Edit
+                            </a>
+                        }
+
+                        <a href="@Url.Action("TvshowsList", "Tvshows")" class="btn btn-outline-light btn-lg px-4 py-2 me-3">
+                            <i class="bi bi-share-fill me-2"></i>Back to TV Shows
+                        </a>
+                    </div>
+                </div>
+                @* Comment Section *@
+                <div class="comment-section">
+                    <h3 class="text-white mb-4">Comments</h3>
+
+                    <!-- Comment Form -->
+                    @if (isAuthenticated)
+                    {
+                        <form class="comment-form" method="post" action="@Url.Action("AddComment", "Comments")">
+                            <textarea name="Comment" rows="4" placeholder="Add your comment here..." id="Comment" required></textarea>
+                            <input type="hidden" name="tvshow_id" value="@Model.Tvshows.Id" />
+                            <button type="submit" class="btn btn-warning btn-lg px-4 py-2 mt-3">Submit Comment</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="text-warning">Please <a href="@Url.Action("Login", "Account")" class="text-warning">login</a> to add a comment.</p>
+                    }
+
+                    <!-- Display Comments -->
+                    <div class="mt-5">
+                        @if (Model.Comments != null && Model.Comments.Any())
+                        {
+                            @foreach (var comment in Model.Comments)
+                            {
+                                <div class="comment-box d-flex justify-content-between align-items-start mb-3 p-3  rounded">
+                                    <div class="comment-content">
+                                        <div class="comment-author fw-bold">@comment.User_name</div>
+                                        <div class="comment-text">@comment.Comment</div>
+                                    </div>
+
+                                    @if (isAuthenticated && comment.User_id == Model.UserId) // Ensure the user can only edit/delete their own comments
+                                    {
+                                        <form method="post" action="@Url.Action("Delete", "Comments")" onsubmit="return confirmDelete();">
+                                            <input type="hidden" name="id" value="@comment.Id" />
+
+                                            <div class="comment-actions d-flex align-items-center">
+                                                <button type="submit" class="btn btn-outline-secondary btn-rounded mx-2" role="button">Delete</button>
+                                            </div>
+                                        </form>
+
+
+
+                                    }
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No comments yet. Be the first to comment!</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function playVideo() {
+            var iframe = document.getElementById('youtubeIframe');
+            var playButton = document.querySelector('.play-button');
+
+            if (iframe) {
+                // Make the iframe visible
+                iframe.style.display = 'block';
+
+                // Ensure the iframe src includes the autoplay parameter
+                var src = iframe.src;
+                if (!src.includes('autoplay=1')) {
+                    iframe.src += (src.includes('?') ? '&' : '?') + 'autoplay=1';
+                }
+
+                // Hide the play button
+                if (playButton) {
+                    playButton.style.display = 'none';
+                }
+            }
+        }
+
+        function setRating(value) {
+            document.getElementById('ratingValue').value = value;
+        }
+       
+    </script>
+</body>
+</html>

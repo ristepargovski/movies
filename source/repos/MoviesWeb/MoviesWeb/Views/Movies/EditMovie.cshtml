@@ -1,0 +1,115 @@
+﻿@model MoviesAPI.Models.Update_Movie_Model
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Movie Hub</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="row gutters">
+            <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <div class="account-settings">
+                            <div class="user-profile">
+                                <div class="user-avatar mb-3">
+                                    @if (Model.Image != null && Model.Image.Length > 0)
+                                    {
+                                        <img src="data:image;base64,@Convert.ToBase64String(Model.Image)" class="card-img-top" alt="@Model.Name">
+                                    }
+                                    else
+                                    {
+                                        <img src="https://via.placeholder.com/350x200" class="card-img-top" alt="No Image Available">
+                                    }
+                                </div>
+                                <h5 class="user-name mb-1">@Model.Name</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12">
+                <form asp-action="EditMovie" method="post">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row gutters">
+                                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                                    <h6 class="mb-2 text-primary">Movie Details</h6>
+                                    <hr class="mt-0 mb-4">
+
+                                </div>
+
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label for="MovieName">Movie Name</label>
+                                        <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" />
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label for="Price">Price</label>
+                                        <input type="text" class="form-control" id="Price" name="Price" value="@Model.Price" />
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label for="Quality">Quality</label>
+                                        <select class="form-control" id="Quality" name="Quality" value="@Model.Quality" >
+                                            <option value="HD">HD</option>
+                                            <option value="Full HD">Full HD</option>
+                                            <option value="4K">4K</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label for="Duration">Duration (minutes)</label>
+                                        <input type="number" class="form-control" id="Duration" name="Duration" value="@Model.Duration" required />
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label for="ReleaseDate">Release Date</label>
+
+                                        <input type="date" class="form-control" id="ReleaseDate" name="ReleaseDate" value="@Model.Release_date" />
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label for="Rating">Rating</label>
+                                        <input type="text" class="form-control" id="Rating" name="Rating" value="@Model.Rating" />
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label for="Genre">Genre</label>
+                                        <input type="text" class="form-control" id="Genre" name="Genre" value="@Model.Genre" />
+                                    </div>
+                                </div>
+                                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                                    <div class="form-group">
+                                        <label for="Details">Details</label>
+                                        <textarea class="form-control" id="Details" name="Details" rows="3" required>@Model.Details</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row gutters">
+                                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 d-flex justify-content-center">
+                                    <a class="btn btn-secondary mr-2" href="@Url.Action("Index", "Home")">Cancel</a>
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

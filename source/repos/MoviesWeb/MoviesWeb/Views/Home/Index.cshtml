@@ -1,0 +1,386 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@model List<MoviesAPI.Models.Movies_Model>
+@inject IAuthorizationService AuthorizationService
+@using System.Security.Claims
+@{
+    bool isAuthenticated = User.Identity.IsAuthenticated;
+    bool isAdmin = false;
+    string givenName = string.Empty; // To store the givenname claim value
+
+    if (isAuthenticated)
+    {
+        // Get the givenname claim using the full URI
+        var givenNameClaim = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname");
+
+        if (givenNameClaim != null)
+        {
+            givenName = givenNameClaim.Value;
+        }
+
+        // Check for the ADMIN claim
+        isAdmin = User.Claims.Any(c => c.Type == "ADMIN" && c.Value == "ADMIN"); // Adjust claim type if needed
+    }
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Movie Hub</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, rgba(16, 21, 30, 1), rgba(16, 21, 30, 0.95), rgba(16, 21, 30, 0.25), rgba(16, 21, 30, 0.2)), url('/Assets/apps.52093.13510798887965458.24b7078b-1361-4a02-9dfe-6f55610ec428.jpg');
+            background-size: 100% 100%; /* Stretches the background to cover the entire element */
+            background-position: top; /* Aligns the background image to the top */
+            background-repeat: no-repeat; /* Prevents the background from repeating */
+            padding: 0;
+            height: 80vh; /* Sets the height of the element to 80% of the viewport height */
+            max-height: 80vh; /* Ensures the background doesn't exceed 80% of the viewport height */
+            width: 100%; /* Ensures the background covers the full width of the viewport */
+            margin: 0; /* Removes default margin */
+        }
+        .row{
+            --bs-gutter-x: 0.5rem;
+        }
+
+
+
+
+        .footer {
+            background-color: rgba(0, 0, 0,0.8);
+            color: white;
+            padding: 20px 0;
+        }
+        .footer p{
+                margin: 0;
+            }
+
+
+
+        .header-left {
+            margin-top: 15rem; /* Adjust top margin to push the section down */
+            color: white;
+        }
+
+            .header-left h2 {
+                margin-bottom: 1.5rem;
+                font-size: 4rem;
+                text-align: center;
+                font-weight: 900;
+                line-height: 1.3em;
+            }
+
+            .header-left h4 {
+                margin-bottom: 1.5rem;
+                font-size: 3rem;
+                text-align: center;
+                font-weight: 900;
+                line-height: 1em;
+            }
+
+            .header-left p {
+                color: rgb(255, 255, 255);
+                text-align: center;
+                font-size: 1rem;
+                font-weight: 400;
+                line-height: 1.5;
+            }
+
+
+        .input-container {
+            margin: auto;
+            margin-bottom: 40rem; /* Space below the container if needed */
+            position: relative; /* Required for label positioning */
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            align-content: center;
+        }
+
+
+
+
+            .input-container input {
+                width: 60%;
+                padding: 10px 0;
+                font-size: 16px;
+                color: #fff;
+                border: 1px solid #6f767d; /* Ensure border color matches */
+                outline: none;
+                background: transparent;
+                cursor: pointer;
+                margin-right: 1rem;
+            }
+
+            .input-container label {
+                position: absolute;
+                top: 0;
+                left: 15%;
+                padding: 10px 0;
+                font-size: 1rem;
+                color: #fff;
+                pointer-events: none;
+                transition: .5s;
+                margin-left: 0.5rem;
+            }
+
+            .input-container input:focus ~ label,
+            .input-container input:valid ~ label {
+                top: -20px;
+                transform: translateY(-50%); /* Keep label centered when moved up */
+                font-size: 0.75rem;
+                color: #03e9f4; /* Label color when input is focused or valid */
+            }
+
+        .btn-outline-secondary {
+            color: #E5A00D;
+            border-color: #E5A00D;
+            line-height: 1.5; /* Matching line height with input */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            border-radius: 0 0.25rem 0.25rem 0; /* Rounded corners for button */
+            margin-left: -1px; /* Avoid gap between input and button */
+        }
+
+        .btn-pad {
+            padding: 0.625rem 1rem 0.625rem;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #E5A00D;
+            color: #121212;
+        }
+
+
+
+
+        /* //////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+        .divider {
+            position: absolute;
+            bottom: 0; /* Position at the bottom of the container */
+            left: 0;
+            width: 100%;
+            height: 4px; /* Thickness of the line */
+            background: linear-gradient( to right, rgba(33, 13, 22, 1) 0%, rgba(184, 40, 105, 1) 30%, rgba(229, 9, 20, 1) 50%, rgba(184, 40, 105, 1) 70%, rgba(33, 13, 22, 1) 100% );
+            border-radius: 50%; /* Makes it curved */
+            transform-origin: bottom; /* Ensures the curve is at the bottom */
+        }
+
+
+        @@media (max-width: 1485px) {
+            .input-container input {
+                width: 40%;
+            }
+
+            .input-container {
+                width: 100%;
+            }
+
+                .input-container label {
+                    left: 26%;
+                }
+        }
+
+        @@media (max-width: 1450px) {
+            .header-left {
+                margin: auto;
+                margin-top: 12rem; /* Adjust top margin to push the section down */
+            }
+        }
+
+        @@media (max-width: 1150px) {
+            .header-left {
+                margin: auto;
+                margin-top: 12rem; /* Adjust top margin to push the section down */
+            }
+
+                .header-left h2 {
+                    margin-bottom: 1rem;
+                    font-size: 2.8em;
+                    line-height: 1.3em;
+                }
+
+                .header-left p {
+                    margin-bottom: 1.5rem;
+                    font-size: 1.3em;
+                }
+        }
+
+        @@media (max-width: 850px) {
+            .header-left {
+                margin: auto;
+                margin-top: 12rem; /* Adjust top margin to push the section down */
+            }
+
+                .header-left h2 {
+                    margin-bottom: 2rem;
+                    font-size: 2em;
+                    line-height: 1.3em;
+                }
+
+                .header-left p {
+                    margin-bottom: 1rem;
+                    font-size: 1em;
+                    margin: 0 0.5rem 2rem 0.5rem;
+                }
+
+                .header-left .btn {
+                }
+        }
+
+        @@media (max-width: 600px) {
+            .header-left {
+                margin: auto;
+                margin-top: 12rem; /* Adjust top margin to push the section down */
+            }
+
+                .header-left h4 {
+                    margin-bottom: 2rem;
+                    font-size: 2em;
+                    line-height: 1.3em;
+                }
+
+                .header-left p {
+                    margin-bottom: 1rem;
+                    font-size: 0.9em;
+                    margin: 0 0.5rem 2rem 0.5rem;
+                }
+        }
+
+    </style>
+</head>
+<body>
+
+
+
+    <div class="header-left text-left">
+        @if (isAuthenticated)
+        {
+            <h4>Welcome Back @givenName! <br /> Explore More Movies</h4>
+            <p class="lead">You’re just a click away from discovering new favorites. Keep exploring our vast collection of movies and enjoy watching.</p>
+
+            <div class="input-container">
+                <a class="btn-pad btn btn-outline-secondary" type="button" href="#explore-div">Explore Movies &gt;</a>
+
+            </div>
+        }
+        else
+        {
+            <h2>Unlock the Best Movies,<br /> Anytime, Anywhere.</h2>
+            <p class="lead">Find and purchase your favorite movies with ease. Dive into a world of cinema,<br /> where every movie is just a click away.</p>
+
+            <form asp-action="Register" asp-controller="Register" method="get" class="input-container">
+                <input type="email" id="EmailAddress" name="EmailAddress" autocomplete="off" required>
+                <label for="EmailAddress">Email address</label>
+                <button type="submit" class="btn-pad btn btn-outline-secondary">Get Started &gt;</button>
+            </form>
+
+        }
+    </div>
+
+
+    @* //////////////////////////////////////////////////////////////////////////////////////////// *@
+
+    <div class="divider-container">
+        <div class="divider"></div>
+    </div>
+
+
+
+    <div class=" mb-5">
+        <!-- Search Bar -->
+
+
+        <div class="container" id="explore-div">
+            <h8 class="">ONLINE STREAMING</h8>
+        </div>
+        <div class="d-flex justify-content-between align-items-center my-4 container">
+            <h2>Featured Movies</h2>
+        </div>
+
+
+        @*   <div id="searchResults" class="row">
+        <!-- Initial movies are rendered here by the server -->
+
+        </div>  *@
+
+
+
+        <div id="searchResults" class="row">
+            <!-- Initial movies are rendered here by the server -->
+
+        </div>
+
+
+
+    </div>
+
+    <footer class="footer text-center">
+      
+            <p>&copy; 2024 StreamSpot. All rights reserved.</p>
+       
+    </footer>
+
+    <script>
+        $(document).ready(function () {
+            function loadMovies(query) {
+                //console.log(query, "query");
+                $.ajax({
+                    url: '/Movies/SearchResults',
+                    type: 'GET',
+                    success: function (data) {
+                        $('#searchResults').html(data);
+                    },
+                    error: function () {
+                        $('#searchResults').html('<p class="text-danger">Error retrieving search results.</p>');
+                    }
+                });
+            }
+
+         
+
+            // Initial load to display all movies
+            loadMovies('');
+        });
+    </script>
+
+
+
+</body>
+</html>
+
+
+
+
+
+@*  .input-container input {
+                font-size: 1rem;
+                line-height: 1.5;
+                width: 30%; /* Adjust input width as needed */
+                padding: 1rem 1rem 0.5rem;
+                box-sizing: border-box; /* Include padding and border in the element's total width and height */
+                border-radius: 0.25rem 0 0 0.25rem; /* Rounded corners for input */
+                outline: none;
+                background: none;
+                color: white;
+            }
+
+            /* Floating label styling */
+             .input-container label {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-350%, -50%); /* Center the label over the input */
+                font-size: 1rem;
+                color: #6f767d; /* Match the original border color */
+                pointer-events: none;
+                transition: all 0.3s ease; /* Smooth transition */
+            } *@
